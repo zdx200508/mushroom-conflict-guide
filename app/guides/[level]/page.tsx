@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { getGuide, getGuideLevels } from "../../../data/guides";
 import CommentsSection from "../../components/CommentsSection";
+import SiteHeader from "../../components/SiteHeader";
 
 type GuidePageProps = { params: Promise<{ level: string }> };
 
@@ -12,7 +12,10 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: GuidePageProps): Promise<Metadata> {
   const { level } = await params;
   const guide = getGuide(Number(level));
-  if (!guide) return {};
+  if (!guide) {
+    const title = `第${level}关暂未收录｜蘑菇冲突攻略站`;
+    return { title, description: `蘑菇冲突第${level}关攻略暂未收录。` };
+  }
   const title = `${guide.title}｜蘑菇冲突攻略站`;
   return { title, description: guide.summary, openGraph: { title, description: guide.summary, images: [] }, twitter: { title, description: guide.summary, images: [] } };
 }
@@ -20,17 +23,28 @@ export async function generateMetadata({ params }: GuidePageProps): Promise<Meta
 export default async function GuidePage({ params }: GuidePageProps) {
   const { level } = await params;
   const guide = getGuide(Number(level));
-  if (!guide) notFound();
+
+  if (!guide) {
+    return (
+      <main>
+        <SiteHeader />
+        <div className="uncollected-shell">
+          <nav className="breadcrumbs" aria-label="当前位置">首页 <span>›</span> 关卡攻略 <span>›</span> 第{level}关</nav>
+          <section className="uncollected-card">
+            <span className="uncollected-mark" aria-hidden="true">?</span>
+            <p className="level-label">蘑菇冲突 · 关卡攻略</p>
+            <h1>第{level}关暂未收录</h1>
+            <p>后续会逐步补充困难关卡攻略。</p>
+            <a href="/guides/532">查看已收录的第532关</a>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main>
-      <header className="site-header">
-        <div className="header-inner">
-          <a className="site-brand" href="/guides/532"><span className="brand-mark" aria-hidden="true"><i /><b /></span><span>蘑菇冲突<span className="brand-suffix">攻略站</span></span></a>
-          <nav className="top-nav" aria-label="网站导航"><span>首页</span><span className="active">关卡攻略</span><span>新手指南</span><span>社区讨论</span></nav>
-          <label className="search-entry"><span aria-hidden="true">⌕</span><input aria-label="搜索关卡（即将开放）" placeholder="搜索关卡（即将开放）" readOnly /></label>
-        </div>
-      </header>
+      <SiteHeader />
       <div className="page-shell">
         <aside className="level-sidebar" aria-label="关卡导航">
           <div className="side-heading"><strong>关卡攻略</strong><span>目录</span></div>
